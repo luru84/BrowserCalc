@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive } from "vue";
+import { computed, reactive, onMounted, onBeforeUnmount } from "vue";
 import type { Operator } from "../lib/calculator";
 import {
   applyPercent,
@@ -23,7 +23,6 @@ import {
   updateSettings,
 } from "../lib/calculator";
 import { applyTheme, loadSettings, saveSettings, type Settings } from "../lib/settings";
-import { onBeforeUnmount, onMounted } from "vue";
 
 const settings = reactive<Settings>(loadSettings());
 applyTheme(settings.theme);
