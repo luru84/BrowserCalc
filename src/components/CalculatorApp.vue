@@ -12,11 +12,18 @@ import {
   equals,
   inputDecimal,
   inputDigit,
+  memoryAdd,
+  memoryClear,
+  memoryRecall,
+  memoryStore,
+  memorySubtract,
   setOperator,
   toggleSign,
+  toggleMode,
   updateSettings,
 } from "../lib/calculator";
 import { applyTheme, loadSettings, saveSettings, type Settings } from "../lib/settings";
+import { onBeforeUnmount, onMounted } from "vue";
 
 const settings = reactive<Settings>(loadSettings());
 applyTheme(settings.theme);
@@ -45,8 +52,15 @@ const onToggleSign = () => mergeState(toggleSign(state));
 const onPercent = () => mergeState(applyPercent(state));
 const onTaxIn = () => mergeState(applyTaxIncluded(state));
 const onTaxOut = () => mergeState(applyTaxExcluded(state));
-const onMemory = (_action: string) => {
-  // TODO: メモリ実装は別Issueで対応
+const onMemory = (action: string) => {
+  const handlers: Record<string, () => void> = {
+    MC: () => mergeState(memoryClear(state)),
+    MR: () => mergeState(memoryRecall(state)),
+    MS: () => mergeState(memoryStore(state)),
+    "M+": () => mergeState(memoryAdd(state)),
+    "M-": () => mergeState(memorySubtract(state)),
+  };
+  handlers[action]?.();
 };
 
 const syncCalcSettings = () =>
@@ -70,7 +84,67 @@ const display = computed(() => state.displayValue);
 const indicatorOps = computed(() => ({
   op: state.pendingOperator,
   err: state.error,
+  mem: state.memoryValue !== null,
 }));
+
+const onHistoryReuse = (entry: string) => {
+  mergeState({ ...state, displayValue: entry, newInput: false });
+};
+const onHistoryClear = () => {
+  mergeState({ ...state, history: [] });
+};
+const onHistoryCopy = async (entry: string) => {
+  if (navigator?.clipboard) {
+    await navigator.clipboard.writeText(entry);
+  }
+};
+
+const handleKey = (e: KeyboardEvent) => {
+  const key = e.key;
+  if (/^[0-9]$/.test(key)) {
+    onDigit(key);
+    e.preventDefault();
+    return;
+  }
+  if (key === ".") {
+    onDecimal();
+    e.preventDefault();
+    return;
+  }
+  if (["+", "-", "*", "/"].includes(key)) {
+    onOperator(key as Operator);
+    e.preventDefault();
+    return;
+  }
+  if (key === "Enter" || key === "=") {
+    onEquals();
+    e.preventDefault();
+    return;
+  }
+  if (key === "Backspace") {
+    onBackspace();
+    e.preventDefault();
+    return;
+  }
+  if (key === "Escape" || key.toLowerCase() === "c") {
+    onClear();
+    e.preventDefault();
+    return;
+  }
+  if (key === "%") {
+    onPercent();
+    e.preventDefault();
+    return;
+  }
+};
+
+onMounted(() => {
+  window.addEventListener("keydown", handleKey);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("keydown", handleKey);
+});
 </script>
 
 <template>
@@ -80,6 +154,7 @@ const indicatorOps = computed(() => ({
         <div class="indicators">
           <span v-if="indicatorOps.op" class="pill">{{ indicatorOps.op }}</span>
           <span v-if="indicatorOps.err" class="pill error">ERR</span>
+          <span v-if="indicatorOps.mem" class="pill">M</span>
         </div>
         <div>{{ display }}</div>
       </div>
@@ -185,8 +260,37 @@ const indicatorOps = computed(() => ({
         </div>
       </div>
 
+      <div class="setting">
+        <label>モード</label>
+        <div class="radio-group">
+          <label>
+            <input type="radio" name="mode" value="sequential" :checked="state.mode === 'sequential'" @change="() => mergeState(toggleMode(state, 'sequential'))" />
+            逐次計算
+          </label>
+          <label>
+            <input type="radio" name="mode" value="expression" :checked="state.mode === 'expression'" @change="() => mergeState(toggleMode(state, 'expression'))" />
+            式評価
+          </label>
+        </div>
+      </div>
+
       <h2>ヘルプ</h2>
       <p>ショートカット: 数字/演算子/Enter/Backspace/Esc/+/−/% など。</p>
+
+      <h2>履歴</h2>
+      <div class="setting checkbox">
+        <button class="btn" type="button" @click="onHistoryClear" aria-label="履歴クリア">履歴クリア</button>
+      </div>
+      <ul aria-label="履歴" style="list-style:none; padding:0; margin:0;">
+        <li v-for="(h, idx) in state.history" :key="idx" style="margin-bottom:8px;">
+          <div style="font-size:13px; color:#475569">{{ h.expression }}</div>
+          <div style="font-weight:600">{{ h.result }}</div>
+          <div style="display:flex; gap:6px; margin-top:4px;">
+            <button class="btn" type="button" @click="onHistoryReuse(h.result)" aria-label="履歴を再利用">再利用</button>
+            <button class="btn" type="button" @click="onHistoryCopy(h.result)" aria-label="履歴をコピー">コピー</button>
+          </div>
+        </li>
+      </ul>
     </aside>
   </div>
 </template>
