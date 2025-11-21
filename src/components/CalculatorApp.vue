@@ -23,7 +23,6 @@ import {
   updateSettings,
 } from "../lib/calculator";
 import { applyTheme, loadSettings, saveSettings, type Settings } from "../lib/settings";
-import { onBeforeUnmount, onMounted } from "vue";
 
 const settings = reactive<Settings>(loadSettings());
 applyTheme(settings.theme);
