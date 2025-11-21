@@ -2,6 +2,9 @@
 import { computed, reactive } from "vue";
 import type { Operator } from "../lib/calculator";
 import {
+  applyPercent,
+  applyTaxExcluded,
+  applyTaxIncluded,
   backspace,
   clearAll,
   clearEntry,
@@ -27,6 +30,9 @@ const onClear = () => mergeState(clearAll(state));
 const onClearEntry = () => mergeState(clearEntry(state));
 const onBackspace = () => mergeState(backspace(state));
 const onToggleSign = () => mergeState(toggleSign(state));
+const onPercent = () => mergeState(applyPercent(state));
+const onTaxIn = () => mergeState(applyTaxIncluded(state));
+const onTaxOut = () => mergeState(applyTaxExcluded(state));
 
 const display = computed(() => state.displayValue);
 const indicatorOps = computed(() => ({
@@ -45,7 +51,7 @@ const indicatorOps = computed(() => ({
       <div>{{ display }}</div>
     </div>
 
-    <div class="top-row" aria-label="クリアと符号">
+    <div class="top-row" aria-label="ユーティリティ">
       <button class="btn" type="button" @click="onClearEntry" aria-label="クリアエントリ">
         CE
       </button>
@@ -53,9 +59,10 @@ const indicatorOps = computed(() => ({
       <button class="btn" type="button" @click="onBackspace" aria-label="バックスペース">
         ⌫
       </button>
-      <button class="btn operator" type="button" @click="onToggleSign" aria-label="符号反転">
-        +/-
-      </button>
+      <button class="btn operator" type="button" @click="onToggleSign" aria-label="符号反転">+/−</button>
+      <button class="btn operator" type="button" @click="onPercent" aria-label="パーセント">%</button>
+      <button class="btn operator" type="button" @click="onTaxIn" aria-label="税込">税込</button>
+      <button class="btn operator" type="button" @click="onTaxOut" aria-label="税抜">税抜</button>
     </div>
 
     <div class="grid" aria-label="キー入力">

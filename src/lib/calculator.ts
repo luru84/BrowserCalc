@@ -12,11 +12,15 @@ export type CalculatorState = {
   recentOperand: number | null;
   newInput: boolean;
   error: ErrorState | null;
+  taxRate: number;
+  precision: number;
 };
 
 export const MAX_DIGITS = 12;
 const DEFAULT_PRECISION = 3;
+const MAX_DECIMAL_INPUT = 4; // 入力時の小数桁は第4位まで許可（第4位丸め→第3位表示）
 const OVERFLOW_MESSAGE = "Overflow";
+export const DEFAULT_TAX_RATE = 0.1;
 
 export function createInitialState(): CalculatorState {
   return {
@@ -26,6 +30,8 @@ export function createInitialState(): CalculatorState {
     recentOperand: null,
     newInput: true,
     error: null,
+    taxRate: DEFAULT_TAX_RATE,
+    precision: DEFAULT_PRECISION,
   };
 }
 
@@ -56,6 +62,11 @@ export function inputDigit(state: CalculatorState, digit: string): CalculatorSta
 
   const digits = countDigits(state.displayValue);
   if (digits >= MAX_DIGITS) return state;
+
+  if (state.displayValue.includes(".")) {
+    const decimals = decimalPlaces(state.displayValue);
+    if (decimals >= MAX_DECIMAL_INPUT) return state;
+  }
 
   const next = state.displayValue === "0" ? digit : state.displayValue + digit;
   return { ...state, displayValue: next };
@@ -105,10 +116,10 @@ export function setOperator(state: CalculatorState, operator: Operator): Calcula
   if (state.pendingOperator && state.accumulator != null && !state.newInput) {
     const result = applyOperator(state.accumulator, current, state.pendingOperator);
     if (result == null) return setError(state, "DIV_ZERO", "Cannot divide by zero");
-    const rounded = roundToPrecision(result, DEFAULT_PRECISION);
+    const rounded = roundToPrecision(result, state.precision);
     if (isOverflow(rounded)) return setError(state, "OVERFLOW", OVERFLOW_MESSAGE);
     nextAccumulator = rounded;
-    nextDisplay = formatNumber(rounded, DEFAULT_PRECISION);
+    nextDisplay = formatNumber(rounded, state.precision);
   } else if (state.accumulator == null) {
     nextAccumulator = current;
   }
@@ -139,16 +150,52 @@ export function equals(state: CalculatorState): CalculatorState {
 
   const result = applyOperator(state.accumulator, operand, state.pendingOperator);
   if (result == null) return setError(state, "DIV_ZERO", "Cannot divide by zero");
-  const rounded = roundToPrecision(result, DEFAULT_PRECISION);
+  const rounded = roundToPrecision(result, state.precision);
   if (isOverflow(rounded)) return setError(state, "OVERFLOW", OVERFLOW_MESSAGE);
 
   return {
     ...state,
     accumulator: rounded,
-    displayValue: formatNumber(rounded, DEFAULT_PRECISION),
+    displayValue: formatNumber(rounded, state.precision),
     newInput: true,
     recentOperand: operand,
   };
+}
+
+export function applyPercent(state: CalculatorState): CalculatorState {
+  if (state.error) return state;
+  const current = toNumber(state.displayValue);
+  if (current == null) return state;
+
+  let value = current / 100;
+  if (state.accumulator != null && state.pendingOperator) {
+    // 逐次計算モデル: 加減は acc * (input/100)、乗除は input/100
+    if (state.pendingOperator === "+" || state.pendingOperator === "-") {
+      value = (state.accumulator * current) / 100;
+    }
+  }
+  const rounded = roundToPrecision(value, state.precision);
+  if (isOverflow(rounded)) return setError(state, "OVERFLOW", OVERFLOW_MESSAGE);
+  return { ...state, displayValue: formatNumber(rounded, state.precision), newInput: false };
+}
+
+export function applyTaxIncluded(state: CalculatorState): CalculatorState {
+  if (state.error) return state;
+  const current = toNumber(state.displayValue);
+  if (current == null) return state;
+  const taxed = roundTax(current * (1 + state.taxRate));
+  if (isOverflow(taxed)) return setError(state, "OVERFLOW", OVERFLOW_MESSAGE);
+  return { ...state, displayValue: formatNumber(taxed, 2), newInput: false };
+}
+
+export function applyTaxExcluded(state: CalculatorState): CalculatorState {
+  if (state.error) return state;
+  const current = toNumber(state.displayValue);
+  if (current == null) return state;
+  if (state.taxRate === -1) return setError(state, "INVALID_TOKEN", "Invalid tax rate");
+  const untaxed = roundTax(current / (1 + state.taxRate));
+  if (isOverflow(untaxed)) return setError(state, "OVERFLOW", OVERFLOW_MESSAGE);
+  return { ...state, displayValue: formatNumber(untaxed, 2), newInput: false };
 }
 
 // Helpers
@@ -184,6 +231,11 @@ function countDigits(value: string): number {
   return (value.match(/[0-9]/g) || []).length;
 }
 
+function decimalPlaces(value: string): number {
+  const match = value.split(".")[1];
+  return match ? match.length : 0;
+}
+
 function setError(state: CalculatorState, code: ErrorState["code"], message: string): CalculatorState {
   return {
     ...state,
@@ -208,4 +260,8 @@ function isOverflow(value: number): boolean {
 
   const digitCount = Math.floor(Math.log10(abs)) + 1;
   return digitCount > MAX_DIGITS;
+}
+
+function roundTax(value: number): number {
+  return roundToPrecision(value, 2);
 }

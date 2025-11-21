@@ -1,6 +1,9 @@
 import { expect, test } from "vitest";
 import {
   CalculatorState,
+  applyPercent,
+  applyTaxExcluded,
+  applyTaxIncluded,
   backspace,
   clearAll,
   clearEntry,
@@ -99,6 +102,43 @@ test("rounds to default precision (3 decimals)", () => {
   s = enterNumber(s, "3");
   s = equals(s);
   expect(s.displayValue).toBe("0.333");
+});
+
+test("percent applies sequential model examples", () => {
+  let s = createInitialState();
+  s = enterNumber(s, "200");
+  s = setOperator(s, "+");
+  s = enterNumber(s, "10");
+  s = applyPercent(s); // 10% of 200 => 20
+  s = equals(s);
+  expect(s.displayValue).toBe("220");
+
+  s = createInitialState();
+  s = enterNumber(s, "200");
+  s = setOperator(s, "*");
+  s = enterNumber(s, "10");
+  s = applyPercent(s); // 10% => 0.1
+  s = equals(s);
+  expect(s.displayValue).toBe("20");
+});
+
+test("tax inclusive/exclusive rounds to 2 decimals", () => {
+  let s = createInitialState();
+  s = enterNumber(s, "100");
+  s = applyTaxIncluded(s); // 110.00 -> 110
+  expect(s.displayValue).toBe("110");
+
+  s = applyTaxExcluded(s); // back to 100.00 -> 100
+  expect(s.displayValue).toBe("100");
+});
+
+test("decimal input is limited to 4th place", () => {
+  let s = createInitialState();
+  s = enterNumber(s, "1");
+  s = inputDecimal(s);
+  s = enterNumber(s, "2345");
+  s = enterNumber(s, "6"); // should be ignored (over 4 decimals)
+  expect(s.displayValue).toBe("1.2345");
 });
 
 test("overflow raises an error and requires reset", () => {
