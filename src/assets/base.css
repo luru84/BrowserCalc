@@ -10,6 +10,12 @@
   -webkit-font-smoothing: antialiased;
 }
 
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  color: #e2e8f0;
+  background-color: #0b1220;
+}
+
 *,
 *::before,
 *::after {
@@ -24,6 +30,12 @@ body {
   background: radial-gradient(circle at 20% 20%, #e0f2fe, transparent 35%),
     radial-gradient(circle at 80% 0%, #ffe4e6, transparent 30%),
     #f7f4ff;
+}
+
+:root[data-theme="dark"] body {
+  background: radial-gradient(circle at 20% 20%, #1e293b, transparent 35%),
+    radial-gradient(circle at 80% 0%, #0f172a, transparent 30%),
+    #0b1220;
 }
 
 button {
