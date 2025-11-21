@@ -148,18 +148,6 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="settings-toggle">
-    <button
-      class="btn operator"
-      type="button"
-      @click="showSettings = !showSettings"
-      :aria-expanded="showSettings"
-      aria-controls="settings-panel"
-    >
-      {{ showSettings ? "設定を閉じる" : "設定を開く" }}
-    </button>
-  </div>
-
   <div class="shell">
     <section class="card" aria-label="電卓">
       <div class="display" :class="{ error: indicatorOps.err }" aria-live="polite">
@@ -209,6 +197,21 @@ onBeforeUnmount(() => {
         <button class="btn" type="button" @click="onDecimal" aria-label="小数点">.</button>
         <button class="btn operator" type="button" @click="onOperator('+')" aria-label="足し算">＋</button>
         <button class="btn accent" type="button" @click="onEquals" aria-label="イコール">=</button>
+      </div>
+
+      <div class="settings-toggle-row" aria-label="設定トグル">
+        <div></div>
+        <div></div>
+        <div></div>
+        <button
+          class="btn operator"
+          type="button"
+          @click="showSettings = !showSettings"
+          :aria-expanded="showSettings"
+          aria-controls="settings-panel"
+        >
+          {{ showSettings ? "設定を閉じる" : "設定を開く" }}
+        </button>
       </div>
     </section>
 

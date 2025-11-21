@@ -12,13 +12,6 @@
   gap: 16px;
 }
 
-/* 設定トグルボタン */
-.settings-toggle {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 8px;
-}
-
 @media (min-width: 768px) {
   .shell {
     grid-template-columns: 2fr 1fr;
@@ -167,4 +160,15 @@
 .radio-group {
   display: flex;
   gap: 12px;
+}
+
+.settings-toggle-row {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.settings-toggle-row .btn {
+  height: 100%;
 }
