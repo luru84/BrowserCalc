@@ -2,6 +2,11 @@
 
 要件/基本設計をもとに、開発タスクの流れと受け入れ条件（テスト観点を落とし込んだもの）を整理する。
 
+## 技術スタック（明示）
+- フロントエンド: Vue 3 + TypeScript + Vite
+- テスト: Vitest（ユニット）、将来的にE2Eは別途追加
+- ビルド/CI: npm scripts, GitHub Actions
+
 ## 実装計画（タスクリスト）
 - P0: 環境/CI基盤
   - 依存・lint/typecheck/test のCI確認（済みならスキップ）
