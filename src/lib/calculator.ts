@@ -14,6 +14,8 @@ export type CalculatorState = {
   error: ErrorState | null;
   taxRate: number;
   precision: number;
+  grouping: boolean;
+  scientific: boolean;
 };
 
 export const MAX_DIGITS = 12;
@@ -21,8 +23,12 @@ const DEFAULT_PRECISION = 3;
 const MAX_DECIMAL_INPUT = 4; // 入力時の小数桁は第4位まで許可（第4位丸め→第3位表示）
 const OVERFLOW_MESSAGE = "Overflow";
 export const DEFAULT_TAX_RATE = 0.1;
+const DEFAULT_GROUPING = true;
+const DEFAULT_SCIENTIFIC = false;
 
-export function createInitialState(): CalculatorState {
+type CalculatorOptions = Partial<Pick<CalculatorState, "taxRate" | "precision" | "grouping" | "scientific">>;
+
+export function createInitialState(options: CalculatorOptions = {}): CalculatorState {
   return {
     displayValue: "0",
     accumulator: null,
@@ -30,8 +36,10 @@ export function createInitialState(): CalculatorState {
     recentOperand: null,
     newInput: true,
     error: null,
-    taxRate: DEFAULT_TAX_RATE,
-    precision: DEFAULT_PRECISION,
+    taxRate: options.taxRate ?? DEFAULT_TAX_RATE,
+    precision: options.precision ?? DEFAULT_PRECISION,
+    grouping: options.grouping ?? DEFAULT_GROUPING,
+    scientific: options.scientific ?? DEFAULT_SCIENTIFIC,
   };
 }
 
@@ -119,7 +127,7 @@ export function setOperator(state: CalculatorState, operator: Operator): Calcula
     const rounded = roundToPrecision(result, state.precision);
     if (isOverflow(rounded)) return setError(state, "OVERFLOW", OVERFLOW_MESSAGE);
     nextAccumulator = rounded;
-    nextDisplay = formatNumber(rounded, state.precision);
+    nextDisplay = formatNumber(rounded, state.precision, state.grouping, state.scientific);
   } else if (state.accumulator == null) {
     nextAccumulator = current;
   }
@@ -156,7 +164,7 @@ export function equals(state: CalculatorState): CalculatorState {
   return {
     ...state,
     accumulator: rounded,
-    displayValue: formatNumber(rounded, state.precision),
+    displayValue: formatNumber(rounded, state.precision, state.grouping, state.scientific),
     newInput: true,
     recentOperand: operand,
   };
@@ -176,7 +184,21 @@ export function applyPercent(state: CalculatorState): CalculatorState {
   }
   const rounded = roundToPrecision(value, state.precision);
   if (isOverflow(rounded)) return setError(state, "OVERFLOW", OVERFLOW_MESSAGE);
-  return { ...state, displayValue: formatNumber(rounded, state.precision), newInput: false };
+  return {
+    ...state,
+    displayValue: formatNumber(rounded, state.precision, state.grouping, state.scientific),
+    newInput: false,
+  };
+}
+
+export function updateSettings(state: CalculatorState, options: CalculatorOptions): CalculatorState {
+  return {
+    ...state,
+    taxRate: options.taxRate ?? state.taxRate,
+    precision: options.precision ?? state.precision,
+    grouping: options.grouping ?? state.grouping,
+    scientific: options.scientific ?? state.scientific,
+  };
 }
 
 export function applyTaxIncluded(state: CalculatorState): CalculatorState {
@@ -185,7 +207,11 @@ export function applyTaxIncluded(state: CalculatorState): CalculatorState {
   if (current == null) return state;
   const taxed = roundTax(current * (1 + state.taxRate));
   if (isOverflow(taxed)) return setError(state, "OVERFLOW", OVERFLOW_MESSAGE);
-  return { ...state, displayValue: formatNumber(taxed, 2), newInput: false };
+  return {
+    ...state,
+    displayValue: formatNumber(taxed, 2, state.grouping, state.scientific),
+    newInput: false,
+  };
 }
 
 export function applyTaxExcluded(state: CalculatorState): CalculatorState {
@@ -195,7 +221,11 @@ export function applyTaxExcluded(state: CalculatorState): CalculatorState {
   if (state.taxRate === -1) return setError(state, "INVALID_TOKEN", "Invalid tax rate");
   const untaxed = roundTax(current / (1 + state.taxRate));
   if (isOverflow(untaxed)) return setError(state, "OVERFLOW", OVERFLOW_MESSAGE);
-  return { ...state, displayValue: formatNumber(untaxed, 2), newInput: false };
+  return {
+    ...state,
+    displayValue: formatNumber(untaxed, 2, state.grouping, state.scientific),
+    newInput: false,
+  };
 }
 
 // Helpers
@@ -221,10 +251,27 @@ function toNumber(value: string): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-function formatNumber(value: number, precision = DEFAULT_PRECISION): string {
+function formatNumber(
+  value: number,
+  precision = DEFAULT_PRECISION,
+  grouping = DEFAULT_GROUPING,
+  scientific = DEFAULT_SCIENTIFIC,
+): string {
   const rounded = roundToPrecision(value, precision);
+  const abs = Math.abs(rounded);
+  const digits = abs === 0 ? 1 : Math.floor(Math.log10(abs)) + 1;
+
+  if (scientific && digits > MAX_DIGITS) {
+    return rounded.toExponential(Math.max(0, precision - 1));
+  }
+
   const asStr = rounded.toFixed(precision);
-  return asStr.includes(".") ? asStr.replace(/0+$/, "").replace(/\.$/, "") || "0" : asStr;
+  const trimmed = asStr.includes(".") ? asStr.replace(/0+$/, "").replace(/\.$/, "") || "0" : asStr;
+
+  if (!grouping) return trimmed;
+  const [intPart, decPart] = trimmed.split(".");
+  const withGrouping = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return decPart ? `${withGrouping}.${decPart}` : withGrouping;
 }
 
 function countDigits(value: string): number {

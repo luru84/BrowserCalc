@@ -14,9 +14,21 @@ import {
   inputDigit,
   setOperator,
   toggleSign,
+  updateSettings,
 } from "../lib/calculator";
+import { applyTheme, loadSettings, saveSettings, type Settings } from "../lib/settings";
 
-const state = reactive(createInitialState());
+const settings = reactive<Settings>(loadSettings());
+applyTheme(settings.theme);
+
+const state = reactive(
+  createInitialState({
+    taxRate: settings.taxRate,
+    precision: settings.precision,
+    grouping: settings.grouping,
+    scientific: settings.scientific,
+  }),
+);
 
 const mergeState = (next: typeof state) => {
   Object.assign(state, next);
@@ -33,9 +45,25 @@ const onToggleSign = () => mergeState(toggleSign(state));
 const onPercent = () => mergeState(applyPercent(state));
 const onTaxIn = () => mergeState(applyTaxIncluded(state));
 const onTaxOut = () => mergeState(applyTaxExcluded(state));
-// メモリ操作は後続タスクで実装するため、現在はプレースホルダ
 const onMemory = (_action: string) => {
-  // no-op
+  // TODO: メモリ実装は別Issueで対応
+};
+
+const syncCalcSettings = () =>
+  mergeState(
+    updateSettings(state, {
+      taxRate: settings.taxRate,
+      precision: settings.precision,
+      grouping: settings.grouping,
+      scientific: settings.scientific,
+    }),
+  );
+
+const updateSetting = <K extends keyof Settings>(key: K, value: Settings[K]) => {
+  settings[key] = value;
+  saveSettings(settings);
+  if (key === "theme") applyTheme(settings.theme);
+  syncCalcSettings();
 };
 
 const display = computed(() => state.displayValue);
@@ -98,8 +126,66 @@ const indicatorOps = computed(() => ({
     </section>
 
     <aside class="panel" aria-label="設定・情報">
-      <h2>設定/ヘルプ</h2>
-      <p>税率やテーマの設定は後続タスクで実装します。</p>
+      <h2>設定</h2>
+      <div class="setting">
+        <label for="taxRate">税率 (%)</label>
+        <input
+          id="taxRate"
+          type="number"
+          min="0"
+          max="100"
+          step="0.1"
+          :value="settings.taxRate * 100"
+          @input="(e) => updateSetting('taxRate', Number((e.target as HTMLInputElement).value) / 100)"
+        />
+      </div>
+
+      <div class="setting">
+        <label for="precision">表示精度（小数点以下）</label>
+        <select
+          id="precision"
+          :value="settings.precision"
+          @change="(e) => updateSetting('precision', Number((e.target as HTMLSelectElement).value))"
+        >
+          <option :value="2">2桁</option>
+          <option :value="3">3桁</option>
+          <option :value="4">4桁</option>
+        </select>
+      </div>
+
+      <div class="setting checkbox">
+        <label>
+          <input type="checkbox" :checked="settings.grouping" @change="(e) => updateSetting('grouping', (e.target as HTMLInputElement).checked)" />
+          桁区切り（,）を表示する
+        </label>
+      </div>
+
+      <div class="setting checkbox">
+        <label>
+          <input
+            type="checkbox"
+            :checked="settings.scientific"
+            @change="(e) => updateSetting('scientific', (e.target as HTMLInputElement).checked)"
+          />
+          桁あふれ時に科学表記へ切替
+        </label>
+      </div>
+
+      <div class="setting">
+        <label>テーマ</label>
+        <div class="radio-group">
+          <label>
+            <input type="radio" name="theme" value="light" :checked="settings.theme === 'light'" @change="() => updateSetting('theme', 'light')" />
+            ライト
+          </label>
+          <label>
+            <input type="radio" name="theme" value="dark" :checked="settings.theme === 'dark'" @change="() => updateSetting('theme', 'dark')" />
+            ダーク
+          </label>
+        </div>
+      </div>
+
+      <h2>ヘルプ</h2>
       <p>ショートカット: 数字/演算子/Enter/Backspace/Esc/+/−/% など。</p>
     </aside>
   </div>

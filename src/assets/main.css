@@ -27,10 +27,21 @@
   border: 1px solid #e2e8f0;
 }
 
+:root[data-theme="dark"] .card,
+:root[data-theme="dark"] .panel {
+  background: #111827;
+  border-color: #1f2937;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+}
+
 .panel h2 {
-  margin: 0 0 8px;
+  margin: 0 0 10px;
   font-size: 16px;
   color: #0f172a;
+}
+
+:root[data-theme="dark"] .panel h2 {
+  color: #e2e8f0;
 }
 
 .display {
@@ -100,11 +111,11 @@
   grid-column: span 2;
 }
 
-.top-row {
+.memory-row {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 10px;
-  margin-bottom: 10px;
+  margin: 12px 0;
 }
 
 .utility-row {
@@ -114,13 +125,39 @@
   margin-bottom: 10px;
 }
 
-.memory-row {
-  display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
 .error {
   color: #fca5a5;
+}
+
+.setting {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.setting input[type="number"],
+.setting select {
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid #cbd5e1;
+  font: inherit;
+}
+
+:root[data-theme="dark"] .setting input[type="number"],
+:root[data-theme="dark"] .setting select {
+  background: #0f172a;
+  color: #e2e8f0;
+  border-color: #1f2937;
+}
+
+.setting.checkbox {
+  flex-direction: row;
+  align-items: center;
+}
+
+.radio-group {
+  display: flex;
+  gap: 12px;
 }
