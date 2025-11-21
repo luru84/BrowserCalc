@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive } from "vue";
+import { computed, reactive, onMounted, onBeforeUnmount } from "vue";
 import type { Operator } from "../lib/calculator";
 import {
   applyPercent,

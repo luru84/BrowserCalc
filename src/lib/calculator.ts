@@ -30,7 +30,7 @@ export const DEFAULT_TAX_RATE = 0.1;
 const DEFAULT_GROUPING = true;
 const DEFAULT_SCIENTIFIC = false;
 
-type CalculatorOptions = Partial<Pick<CalculatorState, "taxRate" | "precision" | "grouping" | "scientific">>;
+type CalculatorOptions = Partial<Pick<CalculatorState, "taxRate" | "precision" | "grouping" | "scientific" >>;
 
 export function createInitialState(options: CalculatorOptions = {}): CalculatorState {
   return {
@@ -166,7 +166,7 @@ export function setOperator(state: CalculatorState, operator: Operator): Calcula
 export function equals(state: CalculatorState): CalculatorState {
   if (state.error) return state;
   if (state.mode === "expression") {
-    const { result, error } = evaluateExpression(state.displayValue, state);
+    const { result, error } = evaluateExpression(state.displayValue);
     if (error) return setError(state, "INVALID_TOKEN", error);
     const rounded = roundToPrecision(result ?? 0, state.precision);
     if (isOverflow(rounded)) return setError(state, "OVERFLOW", OVERFLOW_MESSAGE);
@@ -395,7 +395,7 @@ function roundTax(value: number): number {
 
 type EvalResult = { result: number | null; error?: string };
 
-function evaluateExpression(expr: string, _state: CalculatorState): EvalResult {
+function evaluateExpression(expr: string): EvalResult {
   const sanitized = expr.replace(/\s+/g, "");
   if (!/^[0-9+\-*/().]+$/.test(sanitized)) {
     return { result: null, error: "Invalid character" };
