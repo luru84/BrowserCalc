@@ -433,14 +433,14 @@ function tokenize(expr: string): Token[] {
 
 function toRPN(tokens: Token[]): Token[] | null {
   const output: Token[] = [];
-  const ops: Operator[] = [];
+  const ops: Token[] = [];
   const prec: Record<Operator, number> = { "+": 1, "-": 1, "*": 2, "/": 2 };
 
   for (const t of tokens) {
     if (typeof t === "number") {
       output.push(t);
     } else if (t === "(") {
-      ops.push(t as Operator);
+      ops.push(t);
     } else if (t === ")") {
       while (ops.length && ops[ops.length - 1] !== "(") {
         output.push(ops.pop() as Operator);
@@ -448,16 +448,22 @@ function toRPN(tokens: Token[]): Token[] | null {
       if (!ops.length) return null;
       ops.pop();
     } else {
-      while (ops.length && ops[ops.length - 1] !== "(" && prec[ops[ops.length - 1]] >= prec[t]) {
-        output.push(ops.pop() as Operator);
+      while (ops.length) {
+        const top = ops[ops.length - 1];
+        if (top === "(") break;
+        if (prec[top as Operator] >= prec[t]) {
+          output.push(ops.pop() as Operator);
+        } else {
+          break;
+        }
       }
-      ops.push(t as Operator);
+      ops.push(t);
     }
   }
   while (ops.length) {
-    const op = ops.pop() as Operator | "(";
+    const op = ops.pop();
     if (op === "(") return null;
-    output.push(op);
+    output.push(op as Operator);
   }
   return output;
 }
