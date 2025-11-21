@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive, onMounted, onBeforeUnmount } from "vue";
+import { computed, reactive, ref, onMounted, onBeforeUnmount } from "vue";
 import type { Operator } from "../lib/calculator";
 import {
   applyPercent,
@@ -85,6 +85,7 @@ const indicatorOps = computed(() => ({
   err: state.error,
   mem: state.memoryValue !== null,
 }));
+const showSettings = ref(true);
 
 const onHistoryReuse = (entry: string) => {
   mergeState({ ...state, displayValue: entry, newInput: false });
@@ -199,7 +200,7 @@ onBeforeUnmount(() => {
       </div>
     </section>
 
-    <aside class="panel" aria-label="設定・情報">
+    <aside v-if="showSettings" id="settings-panel" class="panel" aria-label="設定・情報">
       <h2>設定</h2>
       <div class="setting">
         <label for="taxRate">税率 (%)</label>
@@ -291,5 +292,20 @@ onBeforeUnmount(() => {
         </li>
       </ul>
     </aside>
+  </div>
+
+  <div class="settings-toggle-row" aria-label="設定トグル">
+    <div></div>
+    <div></div>
+    <div></div>
+    <button
+      class="btn operator"
+      type="button"
+      @click="showSettings = !showSettings"
+      :aria-expanded="showSettings"
+      aria-controls="settings-panel"
+    >
+      {{ showSettings ? "設定を閉じる" : "設定を開く" }}
+    </button>
   </div>
 </template>

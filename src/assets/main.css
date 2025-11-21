@@ -90,6 +90,10 @@
   color: #0f172a;
   transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
   box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 52px;
 }
 
 .btn:active {
@@ -160,4 +164,17 @@
 .radio-group {
   display: flex;
   gap: 12px;
+}
+
+.settings-toggle-row {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
+  gap: 10px;
+}
+
+.settings-toggle-row .btn {
+  height: 100%;
+  min-height: 52px;
 }
