@@ -59,25 +59,25 @@ const indicatorOps = computed(() => ({
     </div>
 
     <div class="grid" aria-label="キー入力">
-      <button class="btn operator" type="button" @click="onOperator('/')" aria-label="割り算">÷</button>
-      <button class="btn operator" type="button" @click="onOperator('*')" aria-label="掛け算">×</button>
-      <button class="btn operator" type="button" @click="onOperator('-')" aria-label="引き算">−</button>
-      <button class="btn operator" type="button" @click="onOperator('+')" aria-label="足し算">＋</button>
-
       <button class="btn" type="button" @click="onDigit('7')">7</button>
       <button class="btn" type="button" @click="onDigit('8')">8</button>
       <button class="btn" type="button" @click="onDigit('9')">9</button>
-      <button class="btn accent" type="button" @click="onEquals" aria-label="イコール">=</button>
+      <button class="btn operator" type="button" @click="onOperator('/')" aria-label="割り算">÷</button>
 
       <button class="btn" type="button" @click="onDigit('4')">4</button>
       <button class="btn" type="button" @click="onDigit('5')">5</button>
       <button class="btn" type="button" @click="onDigit('6')">6</button>
-      <button class="btn" type="button" @click="onDigit('0')">0</button>
+      <button class="btn operator" type="button" @click="onOperator('*')" aria-label="掛け算">×</button>
 
       <button class="btn" type="button" @click="onDigit('1')">1</button>
       <button class="btn" type="button" @click="onDigit('2')">2</button>
       <button class="btn" type="button" @click="onDigit('3')">3</button>
+      <button class="btn operator" type="button" @click="onOperator('-')" aria-label="引き算">−</button>
+
+      <button class="btn wide" type="button" @click="onDigit('0')">0</button>
       <button class="btn" type="button" @click="onDecimal" aria-label="小数点">.</button>
+      <button class="btn operator" type="button" @click="onOperator('+')" aria-label="足し算">＋</button>
+      <button class="btn accent" type="button" @click="onEquals" aria-label="イコール">=</button>
     </div>
   </section>
 </template>

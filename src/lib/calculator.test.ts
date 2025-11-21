@@ -91,3 +91,12 @@ test("digit limit enforced", () => {
   const digitCount = (s.displayValue.match(/[0-9]/g) || []).length;
   expect(digitCount).toBe(12);
 });
+
+test("rounds to default precision (3 decimals)", () => {
+  let s = createInitialState();
+  s = enterNumber(s, "1");
+  s = setOperator(s, "/");
+  s = enterNumber(s, "3");
+  s = equals(s);
+  expect(s.displayValue).toBe("0.333");
+});

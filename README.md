@@ -11,6 +11,8 @@ Web電卓をブラウザで動かすフロントエンド実装。Vue 3 + Vite +
 make setup   # npm install
 make dev     # 開発サーバ（Vite）
 make test    # vitest（ロジックのユニットテスト）
+make lint    # ESLint
+make typecheck # vue-tsc
 make build   # 本番ビルド
 ```
 
@@ -30,7 +32,7 @@ make build   # 本番ビルド
 ```
 
 ## CI / コントリビューション
-- CI: GitHub Actions（`.github/workflows/ci.yml`）で lint/typecheck/test を実行予定です。
+- CI: GitHub Actions（`.github/workflows/ci.yml`）で lint / typecheck / build / test を実行します。
 - ブランチ: `feat/<topic>` などで作業し、main は常に動く状態を維持。
 - 開発手順: `make setup && make test` でローカル確認のうえ PR を作成。
 

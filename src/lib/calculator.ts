@@ -15,6 +15,7 @@ export type CalculatorState = {
 };
 
 export const MAX_DIGITS = 12;
+const DEFAULT_PRECISION = 3;
 
 export function createInitialState(): CalculatorState {
   return {
@@ -27,7 +28,7 @@ export function createInitialState(): CalculatorState {
   };
 }
 
-export function clearAll(state: CalculatorState): CalculatorState {
+export function clearAll(_state: CalculatorState): CalculatorState {
   return createInitialState();
 }
 
@@ -103,8 +104,9 @@ export function setOperator(state: CalculatorState, operator: Operator): Calcula
   if (state.pendingOperator && state.accumulator != null && !state.newInput) {
     const result = applyOperator(state.accumulator, current, state.pendingOperator);
     if (result == null) return setError(state, "DIV_ZERO", "Cannot divide by zero");
-    nextAccumulator = result;
-    nextDisplay = formatNumber(result);
+    const rounded = roundToPrecision(result, DEFAULT_PRECISION);
+    nextAccumulator = rounded;
+    nextDisplay = formatNumber(rounded, DEFAULT_PRECISION);
   } else if (state.accumulator == null) {
     nextAccumulator = current;
   }
@@ -135,11 +137,12 @@ export function equals(state: CalculatorState): CalculatorState {
 
   const result = applyOperator(state.accumulator, operand, state.pendingOperator);
   if (result == null) return setError(state, "DIV_ZERO", "Cannot divide by zero");
+  const rounded = roundToPrecision(result, DEFAULT_PRECISION);
 
   return {
     ...state,
-    accumulator: result,
-    displayValue: formatNumber(result),
+    accumulator: rounded,
+    displayValue: formatNumber(rounded, DEFAULT_PRECISION),
     newInput: true,
     recentOperand: operand,
   };
@@ -168,8 +171,9 @@ function toNumber(value: string): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
-function formatNumber(value: number): string {
-  const asStr = value.toString();
+function formatNumber(value: number, precision = DEFAULT_PRECISION): string {
+  const rounded = roundToPrecision(value, precision);
+  const asStr = rounded.toFixed(precision);
   return asStr.includes(".") ? asStr.replace(/0+$/, "").replace(/\.$/, "") || "0" : asStr;
 }
 
@@ -187,4 +191,9 @@ function setError(state: CalculatorState, code: ErrorState["code"], message: str
     recentOperand: null,
     newInput: true,
   };
+}
+
+function roundToPrecision(value: number, precision = DEFAULT_PRECISION): number {
+  const factor = 10 ** precision;
+  return Math.round(value * factor) / factor;
 }
