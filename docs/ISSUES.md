@@ -2,6 +2,7 @@
 
 リポジトリで発行するIssue案をまとめたものです。`gh issue create -t "<title>" -b "<body>"` で使えます。
 
+## 完了済（参考用）
 1. **feat: implement sequential calculator core**  
    逐次計算ロジック（四則/連続= /符号反転/クリア/⌫/CE、桁上限チェック、エラー状態遷移）。  
    Accept: 逐次計算と=連打が要件通り動作し、クリア系が想定通り。
@@ -34,6 +35,11 @@
    manifest+Service Worker、静的アセットキャッシュ、オフライン計算・設定。  
    Accept: インストール可能で、オフラインでも計算/設定が動く。
 
+## 残タスク（新規起票候補）
 9. **chore: E2E + docs**  
    受け入れ条件に沿ったE2E/手動確認、README更新（使い方/ビルド/起動手順）。  
    Accept: 主要シナリオの確認完了、READMEに手順反映。
+
+10. **chore: GitHub Pages deploy**  
+    Viteの `dist/` を GitHub Pages へ自動デプロイ（gh-pages or Pages Actions）。  
+    Accept: main更新で自動ビルド＋公開、PWAとSWが正しく配信される（ベースパス考慮）。
