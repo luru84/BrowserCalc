@@ -1,30 +1,18 @@
-PY := python3
-VENV := .venv
-ACT := . $(VENV)/bin/activate
+NPM := npm
 
-.PHONY: setup test run fmt lint typecheck clean
+.PHONY: setup dev build test clean
 
 setup:
-	$(PY) -m venv $(VENV)
-	$(ACT) && pip install -U pip
-	@if [ -f requirements.txt ]; then $(ACT) && pip install -r requirements.txt; fi
-	@if [ -f requirements-dev.txt ]; then $(ACT) && pip install -r requirements-dev.txt; fi
-	@echo "✅ setup done"
+	$(NPM) install
+
+dev:
+	$(NPM) run dev
+
+build:
+	$(NPM) run build
 
 test:
-	$(ACT) && PYTHONPATH=src pytest -q
-
-run:
-	$(ACT) && PYTHONPATH=src $(PY) -m yourpkg
-
-fmt:
-	$(ACT) && black . && isort .
-
-lint:
-	$(ACT) && PYTHONPATH=src flake8 .
-
-typecheck:
-	$(ACT) && PYTHONPATH=src mypy src
+	$(NPM) run test
 
 clean:
-	rm -rf __pycache__ .pytest_cache $(VENV)
+	rm -rf node_modules dist
