@@ -100,3 +100,17 @@ test("rounds to default precision (3 decimals)", () => {
   s = equals(s);
   expect(s.displayValue).toBe("0.333");
 });
+
+test("overflow raises an error and requires reset", () => {
+  let s = createInitialState();
+  s = enterNumber(s, "999999999999");
+  s = setOperator(s, "+");
+  s = enterNumber(s, "1");
+  s = equals(s);
+  expect(s.error?.code).toBe("OVERFLOW");
+  expect(s.displayValue).toBe("Overflow");
+
+  s = clearAll(s);
+  expect(s.displayValue).toBe("0");
+  expect(s.error).toBeNull();
+});

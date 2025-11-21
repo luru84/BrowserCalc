@@ -16,6 +16,7 @@ export type CalculatorState = {
 
 export const MAX_DIGITS = 12;
 const DEFAULT_PRECISION = 3;
+const OVERFLOW_MESSAGE = "Overflow";
 
 export function createInitialState(): CalculatorState {
   return {
@@ -105,6 +106,7 @@ export function setOperator(state: CalculatorState, operator: Operator): Calcula
     const result = applyOperator(state.accumulator, current, state.pendingOperator);
     if (result == null) return setError(state, "DIV_ZERO", "Cannot divide by zero");
     const rounded = roundToPrecision(result, DEFAULT_PRECISION);
+    if (isOverflow(rounded)) return setError(state, "OVERFLOW", OVERFLOW_MESSAGE);
     nextAccumulator = rounded;
     nextDisplay = formatNumber(rounded, DEFAULT_PRECISION);
   } else if (state.accumulator == null) {
@@ -138,6 +140,7 @@ export function equals(state: CalculatorState): CalculatorState {
   const result = applyOperator(state.accumulator, operand, state.pendingOperator);
   if (result == null) return setError(state, "DIV_ZERO", "Cannot divide by zero");
   const rounded = roundToPrecision(result, DEFAULT_PRECISION);
+  if (isOverflow(rounded)) return setError(state, "OVERFLOW", OVERFLOW_MESSAGE);
 
   return {
     ...state,
@@ -196,4 +199,10 @@ function setError(state: CalculatorState, code: ErrorState["code"], message: str
 function roundToPrecision(value: number, precision = DEFAULT_PRECISION): number {
   const factor = 10 ** precision;
   return Math.round(value * factor) / factor;
+}
+
+function isOverflow(value: number): boolean {
+  const [intPart] = Math.abs(value).toString().split(".");
+  const digitCount = intPart.replace(/^0+/, "").length;
+  return digitCount > MAX_DIGITS;
 }
