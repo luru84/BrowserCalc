@@ -49,6 +49,11 @@ make test    # pytest 実行
 | `make typecheck` | `mypy` で型チェック |
 | `make clean` | キャッシュ掃除 |
 
+## CI / コントリビューション
+- CI: GitHub Actions（`.github/workflows/ci.yml`）で lint/typecheck/test を実行。PRはCI greenを必須。
+- ブランチ: `feat/<topic>` などで作業し、mainは常に動く状態を維持すること。
+- 開発手順: `make setup && make test` でローカル確認してから PR を作成。
+
 ## ローカル実行
 ```bash
 make run
