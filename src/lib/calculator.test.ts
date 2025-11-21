@@ -11,7 +11,13 @@ import {
   equals,
   inputDecimal,
   inputDigit,
+  memoryAdd,
+  memoryClear,
+  memoryRecall,
+  memoryStore,
+  memorySubtract,
   setOperator,
+  toggleMode,
   toggleSign,
 } from "./calculator";
 
@@ -139,6 +145,38 @@ test("decimal input is limited to 4th place", () => {
   s = enterNumber(s, "2345");
   s = enterNumber(s, "6"); // should be ignored (over 4 decimals)
   expect(s.displayValue).toBe("1.2345");
+});
+
+test("memory operations store/recall/add/subtract", () => {
+  let s = createInitialState();
+  s = enterNumber(s, "10");
+  s = memoryStore(s);
+  s = memoryRecall(s);
+  expect(s.displayValue).toBe("10");
+  s = enterNumber(s, "5");
+  s = memoryAdd(s); // 10 + 5
+  s = memoryRecall(s);
+  expect(s.displayValue).toBe("15");
+  s = enterNumber(s, "3");
+  s = memorySubtract(s); // 15 - 3
+  s = memoryRecall(s);
+  expect(s.displayValue).toBe("12");
+  s = memoryClear(s);
+  expect(s.memoryValue).toBeNull();
+  s = clearAll(s);
+  expect(s.memoryValue).toBeNull();
+});
+
+test("expression mode basic evaluation", () => {
+  let s = createInitialState();
+  s = toggleMode(s, "expression");
+  s = enterNumber(s, "2");
+  s = setOperator(s, "+");
+  s = enterNumber(s, "3");
+  s = setOperator(s, "*");
+  s = enterNumber(s, "4");
+  s = equals(s); // 2 + 3 * 4 = 14
+  expect(s.displayValue).toBe("14");
 });
 
 test("overflow raises an error and requires reset", () => {

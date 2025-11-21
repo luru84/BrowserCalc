@@ -1,4 +1,5 @@
 export type Operator = "+" | "-" | "*" | "/";
+export type Mode = "sequential" | "expression";
 
 export type ErrorState = {
   code: "DIV_ZERO" | "OVERFLOW" | "INVALID_TOKEN";
@@ -16,6 +17,9 @@ export type CalculatorState = {
   precision: number;
   grouping: boolean;
   scientific: boolean;
+  memoryValue: number | null;
+  history: { expression: string; result: string }[];
+  mode: Mode;
 };
 
 export const MAX_DIGITS = 12;
@@ -40,6 +44,9 @@ export function createInitialState(options: CalculatorOptions = {}): CalculatorS
     precision: options.precision ?? DEFAULT_PRECISION,
     grouping: options.grouping ?? DEFAULT_GROUPING,
     scientific: options.scientific ?? DEFAULT_SCIENTIFIC,
+    memoryValue: null,
+    history: [],
+    mode: "sequential",
   };
 }
 
@@ -64,6 +71,10 @@ export function inputDigit(state: CalculatorState, digit: string): CalculatorSta
     return setError(state, "INVALID_TOKEN", "Invalid digit");
   }
 
+  if (state.mode === "expression") {
+    return { ...state, displayValue: state.displayValue === "0" ? digit : state.displayValue + digit, newInput: false };
+  }
+
   if (state.newInput) {
     return { ...state, displayValue: digit === "0" ? "0" : digit, newInput: false };
   }
@@ -82,6 +93,12 @@ export function inputDigit(state: CalculatorState, digit: string): CalculatorSta
 
 export function inputDecimal(state: CalculatorState): CalculatorState {
   if (state.error) return state;
+  if (state.mode === "expression") {
+    if (!state.displayValue.includes(".")) {
+      return { ...state, displayValue: state.displayValue + ".", newInput: false };
+    }
+    return state;
+  }
   if (state.newInput) {
     return { ...state, displayValue: "0.", newInput: false };
   }
@@ -115,6 +132,10 @@ export function setOperator(state: CalculatorState, operator: Operator): Calcula
     return setError(state, "INVALID_TOKEN", "Invalid operator");
   }
 
+  if (state.mode === "expression") {
+    return { ...state, displayValue: state.displayValue + operator, newInput: false };
+  }
+
   const current = toNumber(state.displayValue);
   if (current == null) return state;
 
@@ -144,6 +165,23 @@ export function setOperator(state: CalculatorState, operator: Operator): Calcula
 
 export function equals(state: CalculatorState): CalculatorState {
   if (state.error) return state;
+  if (state.mode === "expression") {
+    const { result, error } = evaluateExpression(state.displayValue, state);
+    if (error) return setError(state, "INVALID_TOKEN", error);
+    const rounded = roundToPrecision(result ?? 0, state.precision);
+    if (isOverflow(rounded)) return setError(state, "OVERFLOW", OVERFLOW_MESSAGE);
+    return pushHistory(
+      {
+        ...state,
+        accumulator: rounded,
+        displayValue: formatNumber(rounded, state.precision, state.grouping, state.scientific),
+        newInput: true,
+        recentOperand: null,
+      },
+      state.displayValue,
+      rounded,
+    );
+  }
   if (state.pendingOperator == null || state.accumulator == null) {
     return { ...state, accumulator: toNumber(state.displayValue), newInput: true };
   }
@@ -161,13 +199,17 @@ export function equals(state: CalculatorState): CalculatorState {
   const rounded = roundToPrecision(result, state.precision);
   if (isOverflow(rounded)) return setError(state, "OVERFLOW", OVERFLOW_MESSAGE);
 
-  return {
-    ...state,
-    accumulator: rounded,
-    displayValue: formatNumber(rounded, state.precision, state.grouping, state.scientific),
-    newInput: true,
-    recentOperand: operand,
-  };
+  return pushHistory(
+    {
+      ...state,
+      accumulator: rounded,
+      displayValue: formatNumber(rounded, state.precision, state.grouping, state.scientific),
+      newInput: true,
+      recentOperand: operand,
+    },
+    `${state.accumulator} ${state.pendingOperator} ${operand}`,
+    rounded,
+  );
 }
 
 export function applyPercent(state: CalculatorState): CalculatorState {
@@ -201,6 +243,12 @@ export function updateSettings(state: CalculatorState, options: CalculatorOption
   };
 }
 
+export function pushHistory(state: CalculatorState, expression: string, result: number): CalculatorState {
+  const entry = { expression, result: formatNumber(result, state.precision, state.grouping, state.scientific) };
+  const nextHistory = [entry, ...state.history].slice(0, 50);
+  return { ...state, history: nextHistory };
+}
+
 export function applyTaxIncluded(state: CalculatorState): CalculatorState {
   if (state.error) return state;
   const current = toNumber(state.displayValue);
@@ -226,6 +274,38 @@ export function applyTaxExcluded(state: CalculatorState): CalculatorState {
     displayValue: formatNumber(untaxed, 2, state.grouping, state.scientific),
     newInput: false,
   };
+}
+
+export function memoryClear(state: CalculatorState): CalculatorState {
+  return { ...state, memoryValue: null };
+}
+
+export function memoryRecall(state: CalculatorState): CalculatorState {
+  if (state.memoryValue == null) return state;
+  return { ...state, displayValue: formatNumber(state.memoryValue, state.precision, state.grouping, state.scientific), newInput: true };
+}
+
+export function memoryStore(state: CalculatorState): CalculatorState {
+  const value = toNumber(state.displayValue);
+  if (value == null) return state;
+  return { ...state, memoryValue: value };
+}
+
+export function memoryAdd(state: CalculatorState): CalculatorState {
+  const value = toNumber(state.displayValue);
+  if (value == null) return state;
+  return { ...state, memoryValue: (state.memoryValue ?? 0) + value };
+}
+
+export function memorySubtract(state: CalculatorState): CalculatorState {
+  const value = toNumber(state.displayValue);
+  if (value == null) return state;
+  return { ...state, memoryValue: (state.memoryValue ?? 0) - value };
+}
+
+export function toggleMode(state: CalculatorState, mode: Mode): CalculatorState {
+  if (mode === state.mode) return state;
+  return { ...state, mode, accumulator: null, pendingOperator: null, recentOperand: null, newInput: true };
 }
 
 // Helpers
@@ -311,4 +391,96 @@ function isOverflow(value: number): boolean {
 
 function roundTax(value: number): number {
   return roundToPrecision(value, 2);
+}
+
+type EvalResult = { result: number | null; error?: string };
+
+function evaluateExpression(expr: string, _state: CalculatorState): EvalResult {
+  const sanitized = expr.replace(/\s+/g, "");
+  if (!/^[0-9+\-*/().]+$/.test(sanitized)) {
+    return { result: null, error: "Invalid character" };
+  }
+  const tokens = tokenize(sanitized);
+  if (!tokens.length) return { result: null, error: "Empty expression" };
+  const rpn = toRPN(tokens);
+  if (!rpn) return { result: null, error: "Syntax error" };
+  const result = evalRPN(rpn);
+  if (result == null) return { result: null, error: "Syntax error" };
+  return { result };
+}
+
+type Token = number | Operator | "(" | ")";
+
+function tokenize(expr: string): Token[] {
+  const tokens: Token[] = [];
+  let buffer = "";
+  for (const ch of expr) {
+    if (/[0-9.]/.test(ch)) {
+      buffer += ch;
+      continue;
+    }
+    if (buffer) {
+      tokens.push(Number(buffer));
+      buffer = "";
+    }
+    if ("+-*/()".includes(ch)) {
+      tokens.push(ch as Token);
+    }
+  }
+  if (buffer) tokens.push(Number(buffer));
+  return tokens;
+}
+
+function toRPN(tokens: Token[]): Token[] | null {
+  const output: Token[] = [];
+  const ops: Token[] = [];
+  const prec: Record<Operator, number> = { "+": 1, "-": 1, "*": 2, "/": 2 };
+
+  for (const t of tokens) {
+    if (typeof t === "number") {
+      output.push(t);
+    } else if (t === "(") {
+      ops.push(t);
+    } else if (t === ")") {
+      while (ops.length && ops[ops.length - 1] !== "(") {
+        output.push(ops.pop() as Operator);
+      }
+      if (!ops.length) return null;
+      ops.pop();
+    } else {
+      while (ops.length) {
+        const top = ops[ops.length - 1];
+        if (top === "(") break;
+        if (prec[top as Operator] >= prec[t]) {
+          output.push(ops.pop() as Operator);
+        } else {
+          break;
+        }
+      }
+      ops.push(t);
+    }
+  }
+  while (ops.length) {
+    const op = ops.pop();
+    if (op === "(") return null;
+    output.push(op as Operator);
+  }
+  return output;
+}
+
+function evalRPN(rpn: Token[]): number | null {
+  const stack: number[] = [];
+  for (const t of rpn) {
+    if (typeof t === "number") {
+      stack.push(t);
+    } else {
+      const b = stack.pop();
+      const a = stack.pop();
+      if (a == null || b == null) return null;
+      const res = applyOperator(a, b, t as Operator);
+      if (res == null) return null;
+      stack.push(res);
+    }
+  }
+  return stack.length === 1 ? stack[0] : null;
 }
