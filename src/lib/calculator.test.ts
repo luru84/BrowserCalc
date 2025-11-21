@@ -114,3 +114,13 @@ test("overflow raises an error and requires reset", () => {
   expect(s.displayValue).toBe("0");
   expect(s.error).toBeNull();
 });
+
+test("overflow from very large results uses magnitude", () => {
+  let s = createInitialState();
+  s = enterNumber(s, "999999999999");
+  s = setOperator(s, "*");
+  s = enterNumber(s, "1000");
+  s = equals(s);
+  expect(s.error?.code).toBe("OVERFLOW");
+  expect(s.displayValue).toBe("Overflow");
+});

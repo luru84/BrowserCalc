@@ -202,7 +202,10 @@ function roundToPrecision(value: number, precision = DEFAULT_PRECISION): number 
 }
 
 function isOverflow(value: number): boolean {
-  const [intPart] = Math.abs(value).toString().split(".");
-  const digitCount = intPart.replace(/^0+/, "").length;
+  if (!Number.isFinite(value)) return true;
+  const abs = Math.abs(value);
+  if (abs === 0) return false;
+
+  const digitCount = Math.floor(Math.log10(abs)) + 1;
   return digitCount > MAX_DIGITS;
 }
