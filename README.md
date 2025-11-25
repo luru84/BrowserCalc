@@ -48,6 +48,10 @@ make build   # 本番ビルド
 - ADR: `docs/ADR.md`
 - エージェント向けガイド: `docs/AGENTS.md`
 
+## デプロイ
+- GitHub Pages: main ブランチへ push すると Actions（`.github/workflows/pages.yml`）でビルド・デプロイ。公開URLは `https://<user>.github.io/BrowserCalc/`（リポジトリ名に依存）。
+- Vite base: `vite.config.ts` で `base: "/BrowserCalc/"` を設定済み。リポジトリ名が変わる場合は base も合わせて変更する。
+
 ## CI / コントリビューション
 - CI: GitHub Actions（`.github/workflows/ci.yml`）で lint / typecheck / build / test を実行します。
 - ブランチ: `feat/<topic>` などで作業し、main は常に動く状態を維持。
