@@ -16,6 +16,16 @@ make typecheck # vue-tsc
 make build   # 本番ビルド
 ```
 
+## ローカル利用とビルド
+- 開発サーバ: `make dev` 実行後、ブラウザで `http://localhost:5173/` を開く。
+- 本番ビルド: `make build`。ローカル確認は `npm run preview`。
+- 主な機能: 逐次計算/式評価モード、税計算（税率設定）、パーセント、メモリ、履歴、キーボード操作、テーマ/表示設定、PWAオフライン。
+
+## テスト
+- ユニット: `make test`
+- Lint/型: `make lint`, `make typecheck`
+- 手動/E2Eチェック: `docs/EVALUATION.md` のシナリオに従う
+
 ## プロジェクト構成
 ```text
 .
