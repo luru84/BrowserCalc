@@ -36,10 +36,4 @@
    Accept: インストール可能で、オフラインでも計算/設定が動く。
 
 ## 残タスク（新規起票候補）
-9. **chore: E2E + docs**  
-   受け入れ条件に沿ったE2E/手動確認、README更新（使い方/ビルド/起動手順）。  
-   Accept: 主要シナリオの確認完了、READMEに手順反映。
-
-10. **chore: GitHub Pages deploy**  
-    Viteの `dist/` を GitHub Pages へ自動デプロイ（gh-pages or Pages Actions）。  
-    Accept: main更新で自動ビルド＋公開、PWAとSWが正しく配信される（ベースパス考慮）。
+なし（T9/T10 完了済み）
