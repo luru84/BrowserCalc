@@ -2,6 +2,12 @@
 
 要件/基本設計をもとに、開発タスクの流れと受け入れ条件（テスト観点を落とし込んだもの）を整理する。
 
+## 関連ドキュメント
+- 要件/設計: `docs/REQUIREMENTS.md`, `docs/DESIGN.md`, `docs/ARCHITECTURE.md`
+- 規約: `docs/CODING_GUIDELINES.md`
+- 判断: `docs/ADR.md`
+- 運用: `docs/AGENTS.md`, `docs/ISSUES.md`
+
 ## 進捗サマリ（2024-XX-XX）
 - 完了: P1〜P7（コア〜PWA）実装済み。
 - 未了: P8のE2E/手動確認・README最終更新、P9のGitHub Pagesデプロイ。

@@ -31,6 +31,13 @@ make build   # 本番ビルド
 └─ vite.config.ts
 ```
 
+## ドキュメント
+- 要件/設計: `docs/REQUIREMENTS.md`, `docs/DESIGN.md`, `docs/ARCHITECTURE.md`
+- 計画/タスク: `docs/PLAN.md`, `docs/ISSUES.md`
+- コーディング規約: `docs/CODING_GUIDELINES.md`
+- ADR: `docs/ADR.md`
+- エージェント向けガイド: `docs/AGENTS.md`
+
 ## CI / コントリビューション
 - CI: GitHub Actions（`.github/workflows/ci.yml`）で lint / typecheck / build / test を実行します。
 - ブランチ: `feat/<topic>` などで作業し、main は常に動く状態を維持。
