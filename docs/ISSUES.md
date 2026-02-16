@@ -58,3 +58,35 @@
   - [x] 演算子区切りで現在オペランドを抽出する
   - [x] 確認: `1.2+3.4` / `10.05*2.1` が入力できる
   - [x] 確認: `1..2` / `3.4.5` は拒否される
+
+## 追加回収（2ndレビュー + UI改善）
+対象日: 2026-02-16
+
+1. **fix: expression mode should continue after grouped result**
+   - 内容: 式評価モードで `=` 後に桁区切り表示（例: `1,234`）となっても、次の演算入力が壊れないようにする。
+   - Accept:
+     - `grouping=ON` で式評価 `1234=` 後、`+1=` が成功する。
+     - 評価時に `Invalid character` にならない。
+
+2. **fix: keep user settings when CE clears error**
+   - 内容: エラー表示中に `CE` を押しても `taxRate/precision/grouping/scientific` が初期値へ戻らないようにする。
+   - Accept:
+     - 設定変更後にエラー発生→`CE` で復帰しても設定値が保持される。
+
+3. **fix: reset calc context on history reuse**
+   - 内容: 履歴再利用時に `displayValue` だけでなく逐次計算コンテキスト（`accumulator/pendingOperator/recentOperand`）を安全にリセットする。
+   - Accept:
+     - 演算途中で履歴再利用しても、前コンテキストが混ざらない。
+
+4. **feat: persist preferred calculation mode**
+   - 内容: 逐次/式評価モードの選好を設定として永続化し、再読み込み後も保持する。
+   - Accept:
+     - モード切替後リロードしても同じモードで起動する。
+
+5. **feat(ui): move settings panel behind hamburger menu**
+   - 内容: 設定エリアをハンバーガーメニューから開閉するUIへ変更（モバイルはドロワー、PCはサイド開閉）。
+   - Accept:
+     - 初期状態で設定パネルは閉。
+     - ハンバーガーで開閉可能。
+     - `Esc`、閉じるボタン、背景クリックで閉じられる。
+     - `aria-expanded` / `aria-controls` / `aria-label` を満たす。
