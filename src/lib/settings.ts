@@ -1,4 +1,5 @@
 export type Theme = "light" | "dark";
+export type CalcMode = "sequential" | "expression";
 
 export type Settings = {
   taxRate: number; // 0.10 = 10%
@@ -6,6 +7,7 @@ export type Settings = {
   grouping: boolean;
   scientific: boolean;
   theme: Theme;
+  mode: CalcMode;
 };
 
 const KEY = "browsercalc:settings";
@@ -16,6 +18,7 @@ export const defaultSettings: Settings = {
   grouping: true,
   scientific: false,
   theme: "light",
+  mode: "sequential",
 };
 
 function safeParse(json: string | null): Partial<Settings> {
@@ -40,6 +43,7 @@ export function loadSettings(): Settings {
     grouping: parsed.grouping ?? defaultSettings.grouping,
     scientific: parsed.scientific ?? defaultSettings.scientific,
     theme: parsed.theme === "dark" ? "dark" : "light",
+    mode: parsed.mode === "expression" ? "expression" : "sequential",
   };
 }
 

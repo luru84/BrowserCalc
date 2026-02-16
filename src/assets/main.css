@@ -8,14 +8,7 @@
 }
 
 .shell {
-  display: grid;
-  gap: 16px;
-}
-
-@media (min-width: 768px) {
-  .shell {
-    grid-template-columns: 2fr 1fr;
-  }
+  position: relative;
 }
 
 .card,
@@ -56,6 +49,16 @@
   font-size: 32px;
   font-variant-numeric: tabular-nums;
   gap: 8px;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.menu-btn {
+  min-width: 120px;
 }
 
 .indicators {
@@ -166,15 +169,55 @@
   gap: 12px;
 }
 
-.settings-toggle-row {
-  margin-top: 10px;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  grid-auto-rows: 1fr;
-  gap: 10px;
+.settings-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  z-index: 30;
 }
 
-.settings-toggle-row .btn {
-  height: 100%;
-  min-height: 52px;
+.settings-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100dvh;
+  width: min(420px, 92vw);
+  border-radius: 0;
+  border-left: 1px solid #e2e8f0;
+  border-top: none;
+  border-right: none;
+  border-bottom: none;
+  overflow-y: auto;
+  z-index: 40;
+  transform: translateX(100%);
+  transition: transform 180ms ease;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.settings-panel.open {
+  transform: translateX(0);
+  visibility: visible;
+  pointer-events: auto;
+}
+
+:root[data-theme="dark"] .settings-panel {
+  border-left-color: #1f2937;
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+@media (min-width: 768px) {
+  #app {
+    padding-right: 24px;
+  }
+
+  .settings-panel {
+    width: min(420px, 45vw);
+  }
 }
