@@ -16,6 +16,7 @@ import {
   memoryRecall,
   memoryStore,
   memorySubtract,
+  reuseHistoryEntry,
   setOperator,
   toggleMode,
   toggleSign,
@@ -271,4 +272,64 @@ test("expression mode decimal input is validated per operand", () => {
   u = inputDecimal(u);
   u = enterNumber(u, "2");
   expect(u.displayValue).toBe("1.2");
+});
+
+test("expression mode continues after grouped result", () => {
+  let s = createInitialState({ grouping: true, mode: "expression" });
+  s = enterNumber(s, "1234");
+  s = equals(s);
+  expect(s.displayValue).toBe("1,234");
+
+  s = setOperator(s, "+");
+  s = enterNumber(s, "1");
+  s = equals(s);
+  expect(s.displayValue).toBe("1,235");
+  expect(s.error).toBeNull();
+});
+
+test("clear entry from error keeps runtime settings", () => {
+  let s = createInitialState({
+    taxRate: 0.08,
+    precision: 6,
+    grouping: false,
+    scientific: true,
+  });
+  s = enterNumber(s, "1");
+  s = setOperator(s, "/");
+  s = enterNumber(s, "0");
+  s = equals(s);
+  expect(s.error?.code).toBe("DIV_ZERO");
+
+  s = clearEntry(s);
+  expect(s.error).toBeNull();
+  expect(s.displayValue).toBe("0");
+  expect(s.taxRate).toBe(0.08);
+  expect(s.precision).toBe(6);
+  expect(s.grouping).toBe(false);
+  expect(s.scientific).toBe(true);
+});
+
+test("reusing history resets sequential context", () => {
+  let s = createInitialState();
+  s = enterNumber(s, "10");
+  s = setOperator(s, "+");
+  s = enterNumber(s, "5");
+  s = equals(s);
+  expect(s.displayValue).toBe("15");
+  expect(s.accumulator).toBe(15);
+
+  s = setOperator(s, "*");
+  expect(s.pendingOperator).toBe("*");
+  s = reuseHistoryEntry(s, "7");
+
+  expect(s.displayValue).toBe("7");
+  expect(s.accumulator).toBeNull();
+  expect(s.pendingOperator).toBeNull();
+  expect(s.recentOperand).toBeNull();
+  expect(s.newInput).toBe(true);
+
+  s = setOperator(s, "+");
+  s = enterNumber(s, "1");
+  s = equals(s);
+  expect(s.displayValue).toBe("8");
 });

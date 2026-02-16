@@ -30,7 +30,9 @@ export const DEFAULT_TAX_RATE = 0.1;
 const DEFAULT_GROUPING = true;
 const DEFAULT_SCIENTIFIC = false;
 
-type CalculatorOptions = Partial<Pick<CalculatorState, "taxRate" | "precision" | "grouping" | "scientific" >>;
+type CalculatorOptions = Partial<
+  Pick<CalculatorState, "taxRate" | "precision" | "grouping" | "scientific" | "mode">
+>;
 
 export function createInitialState(options: CalculatorOptions = {}): CalculatorState {
   return {
@@ -46,7 +48,7 @@ export function createInitialState(options: CalculatorOptions = {}): CalculatorS
     scientific: options.scientific ?? DEFAULT_SCIENTIFIC,
     memoryValue: null,
     history: [],
-    mode: "sequential",
+    mode: options.mode ?? "sequential",
   };
 }
 
@@ -56,12 +58,13 @@ export function clearAll(_state: CalculatorState): CalculatorState {
     precision: _state.precision,
     grouping: _state.grouping,
     scientific: _state.scientific,
+    mode: _state.mode,
   });
 }
 
 export function clearEntry(state: CalculatorState): CalculatorState {
   if (state.error) {
-    return createInitialState();
+    return clearAll(state);
   }
   return {
     ...state,
@@ -267,6 +270,18 @@ export function pushHistory(state: CalculatorState, expression: string, result: 
   return { ...state, history: nextHistory };
 }
 
+export function reuseHistoryEntry(state: CalculatorState, entry: string): CalculatorState {
+  return {
+    ...state,
+    displayValue: entry,
+    accumulator: null,
+    pendingOperator: null,
+    recentOperand: null,
+    error: null,
+    newInput: true,
+  };
+}
+
 export function applyTaxIncluded(state: CalculatorState): CalculatorState {
   if (state.error) return state;
   const current = toNumber(state.displayValue);
@@ -416,7 +431,7 @@ function roundTax(value: number): number {
 type EvalResult = { result: number | null; error?: string };
 
 function evaluateExpression(expr: string): EvalResult {
-  const sanitized = expr.replace(/\s+/g, "");
+  const sanitized = expr.replace(/\s+/g, "").replace(/,/g, "");
   if (!/^[0-9+\-*/().]+$/.test(sanitized)) {
     return { result: null, error: "Invalid character" };
   }

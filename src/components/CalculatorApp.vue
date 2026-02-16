@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, reactive, ref, onMounted, onBeforeUnmount } from "vue";
-import type { Operator } from "../lib/calculator";
+import type { Mode, Operator } from "../lib/calculator";
 import {
   applyPercent,
   applyTaxExcluded,
@@ -17,6 +17,7 @@ import {
   memoryRecall,
   memoryStore,
   memorySubtract,
+  reuseHistoryEntry,
   setOperator,
   toggleSign,
   toggleMode,
@@ -33,6 +34,7 @@ const state = reactive(
     precision: settings.precision,
     grouping: settings.grouping,
     scientific: settings.scientific,
+    mode: settings.mode,
   }),
 );
 
@@ -72,7 +74,7 @@ const syncCalcSettings = () =>
     }),
   );
 
-const updateSetting = <K extends keyof Settings>(key: K, value: Settings[K]) => {
+const updateSetting = <K extends Exclude<keyof Settings, "mode">>(key: K, value: Settings[K]) => {
   settings[key] = value;
   saveSettings(settings);
   if (key === "theme") applyTheme(settings.theme);
@@ -85,10 +87,23 @@ const indicatorOps = computed(() => ({
   err: state.error,
   mem: state.memoryValue !== null,
 }));
-const showSettings = ref(true);
+const showSettings = ref(false);
+
+const closeSettings = () => {
+  showSettings.value = false;
+};
+const toggleSettings = () => {
+  showSettings.value = !showSettings.value;
+};
+
+const onModeChange = (mode: Mode) => {
+  mergeState(toggleMode(state, mode));
+  settings.mode = mode;
+  saveSettings(settings);
+};
 
 const onHistoryReuse = (entry: string) => {
-  mergeState({ ...state, displayValue: entry, newInput: false });
+  mergeState(reuseHistoryEntry(state, entry));
 };
 const onHistoryClear = () => {
   mergeState({ ...state, history: [] });
@@ -101,6 +116,11 @@ const onHistoryCopy = async (entry: string) => {
 
 const handleKey = (e: KeyboardEvent) => {
   const key = e.key;
+  if (key === "Escape" && showSettings.value) {
+    closeSettings();
+    e.preventDefault();
+    return;
+  }
   if (/^[0-9]$/.test(key)) {
     onDigit(key);
     e.preventDefault();
@@ -150,6 +170,19 @@ onBeforeUnmount(() => {
 <template>
   <div class="shell">
     <section class="card" aria-label="電卓">
+      <div class="toolbar">
+        <button
+          class="btn operator menu-btn"
+          type="button"
+          @click="toggleSettings"
+          :aria-expanded="showSettings"
+          aria-controls="settings-panel"
+          aria-label="設定メニューを開閉"
+        >
+          ☰ 設定
+        </button>
+      </div>
+
       <div class="display" :class="{ error: indicatorOps.err }" aria-live="polite">
         <div class="indicators">
           <span v-if="indicatorOps.op" class="pill">{{ indicatorOps.op }}</span>
@@ -200,8 +233,19 @@ onBeforeUnmount(() => {
       </div>
     </section>
 
-    <aside v-if="showSettings" id="settings-panel" class="panel" aria-label="設定・情報">
-      <h2>設定</h2>
+    <div v-if="showSettings" class="settings-backdrop" @click="closeSettings" aria-hidden="true"></div>
+
+    <aside
+      id="settings-panel"
+      class="panel settings-panel"
+      :class="{ open: showSettings }"
+      aria-label="設定・情報"
+      @click.stop
+    >
+      <div class="settings-header">
+        <h2>設定</h2>
+        <button class="btn" type="button" @click="closeSettings" aria-label="設定パネルを閉じる">閉じる</button>
+      </div>
       <div class="setting">
         <label for="taxRate">税率 (%)</label>
         <input
@@ -264,11 +308,11 @@ onBeforeUnmount(() => {
         <label>モード</label>
         <div class="radio-group">
           <label>
-            <input type="radio" name="mode" value="sequential" :checked="state.mode === 'sequential'" @change="() => mergeState(toggleMode(state, 'sequential'))" />
+            <input type="radio" name="mode" value="sequential" :checked="state.mode === 'sequential'" @change="() => onModeChange('sequential')" />
             逐次計算
           </label>
           <label>
-            <input type="radio" name="mode" value="expression" :checked="state.mode === 'expression'" @change="() => mergeState(toggleMode(state, 'expression'))" />
+            <input type="radio" name="mode" value="expression" :checked="state.mode === 'expression'" @change="() => onModeChange('expression')" />
             式評価
           </label>
         </div>
@@ -292,20 +336,5 @@ onBeforeUnmount(() => {
         </li>
       </ul>
     </aside>
-  </div>
-
-  <div class="settings-toggle-row" aria-label="設定トグル">
-    <div></div>
-    <div></div>
-    <div></div>
-    <button
-      class="btn operator"
-      type="button"
-      @click="showSettings = !showSettings"
-      :aria-expanded="showSettings"
-      aria-controls="settings-panel"
-    >
-      {{ showSettings ? "設定を閉じる" : "設定を開く" }}
-    </button>
   </div>
 </template>
