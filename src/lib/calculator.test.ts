@@ -202,3 +202,73 @@ test("overflow from very large results uses magnitude", () => {
   expect(s.error?.code).toBe("OVERFLOW");
   expect(s.displayValue).toBe("Overflow");
 });
+
+test("grouped display value can be parsed for arithmetic and memory ops", () => {
+  let s = createInitialState();
+  s = enterNumber(s, "1234");
+  s = setOperator(s, "+");
+  s = enterNumber(s, "0");
+  s = equals(s);
+  expect(s.displayValue).toBe("1,234");
+
+  s = setOperator(s, "+");
+  s = enterNumber(s, "1");
+  s = equals(s);
+  expect(s.displayValue).toBe("1,235");
+
+  s = memoryStore(s);
+  expect(s.memoryValue).toBe(1235);
+  s = memoryAdd(s);
+  expect(s.memoryValue).toBe(2470);
+  s = memoryRecall(s);
+  expect(s.displayValue).toBe("2,470");
+  s = memorySubtract(s);
+  expect(s.memoryValue).toBe(0);
+});
+
+test("clear all keeps user settings", () => {
+  let s = createInitialState({
+    taxRate: 0.08,
+    precision: 6,
+    grouping: false,
+    scientific: true,
+  });
+  s = enterNumber(s, "999");
+  s = setOperator(s, "+");
+  s = clearAll(s);
+
+  expect(s.taxRate).toBe(0.08);
+  expect(s.precision).toBe(6);
+  expect(s.grouping).toBe(false);
+  expect(s.scientific).toBe(true);
+  expect(s.displayValue).toBe("0");
+  expect(s.accumulator).toBeNull();
+  expect(s.pendingOperator).toBeNull();
+});
+
+test("expression mode decimal input is validated per operand", () => {
+  let s = createInitialState();
+  s = toggleMode(s, "expression");
+  s = enterNumber(s, "1.2");
+  s = setOperator(s, "+");
+  s = enterNumber(s, "3.4");
+  expect(s.displayValue).toBe("1.2+3.4");
+
+  s = inputDecimal(s);
+  expect(s.displayValue).toBe("1.2+3.4");
+
+  let t = createInitialState();
+  t = toggleMode(t, "expression");
+  t = enterNumber(t, "10.05");
+  t = setOperator(t, "*");
+  t = enterNumber(t, "2.1");
+  expect(t.displayValue).toBe("10.05*2.1");
+
+  let u = createInitialState();
+  u = toggleMode(u, "expression");
+  u = enterNumber(u, "1");
+  u = inputDecimal(u);
+  u = inputDecimal(u);
+  u = enterNumber(u, "2");
+  expect(u.displayValue).toBe("1.2");
+});
