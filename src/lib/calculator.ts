@@ -51,7 +51,12 @@ export function createInitialState(options: CalculatorOptions = {}): CalculatorS
 }
 
 export function clearAll(_state: CalculatorState): CalculatorState {
-  return createInitialState();
+  return createInitialState({
+    taxRate: _state.taxRate,
+    precision: _state.precision,
+    grouping: _state.grouping,
+    scientific: _state.scientific,
+  });
 }
 
 export function clearEntry(state: CalculatorState): CalculatorState {
@@ -94,10 +99,10 @@ export function inputDigit(state: CalculatorState, digit: string): CalculatorSta
 export function inputDecimal(state: CalculatorState): CalculatorState {
   if (state.error) return state;
   if (state.mode === "expression") {
-    if (!state.displayValue.includes(".")) {
-      return { ...state, displayValue: state.displayValue + ".", newInput: false };
-    }
-    return state;
+    const currentOperand = getCurrentExpressionOperand(state.displayValue);
+    if (currentOperand.includes(".")) return state;
+    const nextChunk = currentOperand.length === 0 ? "0." : ".";
+    return { ...state, displayValue: state.displayValue + nextChunk, newInput: false };
   }
   if (state.newInput) {
     return { ...state, displayValue: "0.", newInput: false };
@@ -106,6 +111,19 @@ export function inputDecimal(state: CalculatorState): CalculatorState {
     return { ...state, displayValue: state.displayValue + "." };
   }
   return state;
+}
+
+function getCurrentExpressionOperand(expression: string): string {
+  const lastOperatorIndex = Math.max(
+    expression.lastIndexOf("+"),
+    expression.lastIndexOf("-"),
+    expression.lastIndexOf("*"),
+    expression.lastIndexOf("/"),
+  );
+  if (lastOperatorIndex === -1) {
+    return expression;
+  }
+  return expression.slice(lastOperatorIndex + 1);
 }
 
 export function toggleSign(state: CalculatorState): CalculatorState {
@@ -327,7 +345,9 @@ function applyOperator(left: number, right: number, op: Operator): number | null
 }
 
 function toNumber(value: string): number | null {
-  const n = Number(value);
+  const normalized = value.trim().replace(/,/g, "");
+  if (normalized === "") return null;
+  const n = Number(normalized);
   return Number.isFinite(n) ? n : null;
 }
 
