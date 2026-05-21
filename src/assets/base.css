@@ -1,19 +1,67 @@
 :root {
-  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
+  font-family: "IBM Plex Sans", "Avenir Next", "Hiragino Sans", "Noto Sans JP",
+    system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   line-height: 1.5;
   font-weight: 400;
   color-scheme: light;
-  color: #0f172a;
-  background-color: #f8fafc;
+  color: #1c2520;
+  background-color: #eff1eb;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+  --bg: #eff1eb;
+  --bg-accent-a: rgba(203, 176, 138, 0.22);
+  --bg-accent-b: rgba(112, 133, 122, 0.18);
+  --bg-accent-c: rgba(245, 241, 232, 0.86);
+  --surface: rgba(252, 251, 247, 0.88);
+  --surface-strong: #f7f4ee;
+  --surface-soft: #ebe6dc;
+  --border: rgba(92, 104, 96, 0.18);
+  --border-strong: rgba(92, 104, 96, 0.3);
+  --text: #1c2520;
+  --text-muted: #667067;
+  --display-bg: #202724;
+  --display-text: #f5f0e6;
+  --display-muted: #b2b8af;
+  --key: #f3eee4;
+  --key-pressed: #e8ddcb;
+  --key-text: #1f2621;
+  --key-operator: #d7ddd2;
+  --key-operator-text: #27332c;
+  --key-accent: #b66d3d;
+  --key-accent-text: #fffaf2;
+  --shadow: 0 24px 60px rgba(50, 58, 52, 0.14);
+  --shadow-strong: 0 20px 44px rgba(33, 40, 36, 0.18);
+  --scrim: rgba(24, 30, 27, 0.42);
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  color: #e2e8f0;
-  background-color: #0b1220;
+  color: #e6ebdf;
+  background-color: #171d1b;
+  --bg: #171d1b;
+  --bg-accent-a: rgba(131, 104, 73, 0.2);
+  --bg-accent-b: rgba(73, 95, 84, 0.22);
+  --bg-accent-c: rgba(24, 30, 27, 0.9);
+  --surface: rgba(30, 38, 34, 0.9);
+  --surface-strong: #222a26;
+  --surface-soft: #2c3530;
+  --border: rgba(146, 157, 147, 0.16);
+  --border-strong: rgba(176, 187, 177, 0.26);
+  --text: #e6ebdf;
+  --text-muted: #9da89d;
+  --display-bg: #0e1210;
+  --display-text: #f5f1e8;
+  --display-muted: #a9b0a8;
+  --key: #2b342f;
+  --key-pressed: #35403a;
+  --key-text: #edf2e7;
+  --key-operator: #38443d;
+  --key-operator-text: #f0f4ee;
+  --key-accent: #c27f4f;
+  --key-accent-text: #fffaf3;
+  --shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
+  --shadow-strong: 0 20px 44px rgba(0, 0, 0, 0.34);
+  --scrim: rgba(0, 0, 0, 0.5);
 }
 
 *,
@@ -25,19 +73,39 @@
 body {
   margin: 0;
   min-height: 100vh;
-  display: grid;
-  place-items: center;
-  background: radial-gradient(circle at 20% 20%, #e0f2fe, transparent 35%),
-    radial-gradient(circle at 80% 0%, #ffe4e6, transparent 30%),
-    #f7f4ff;
+  min-height: 100dvh;
+  background:
+    radial-gradient(circle at top left, var(--bg-accent-a), transparent 34%),
+    radial-gradient(circle at 85% 0, var(--bg-accent-b), transparent 28%),
+    linear-gradient(180deg, var(--bg-accent-c), transparent 58%),
+    var(--bg);
+  color: var(--text);
 }
 
-:root[data-theme="dark"] body {
-  background: radial-gradient(circle at 20% 20%, #1e293b, transparent 35%),
-    radial-gradient(circle at 80% 0%, #0f172a, transparent 30%),
-    #0b1220;
+html {
+  min-height: 100%;
+  background: var(--bg);
+}
+
+body,
+#app {
+  width: 100%;
+}
+
+@supports (-webkit-touch-callout: none) {
+  html,
+  body,
+  #app {
+    min-height: -webkit-fill-available;
+  }
 }
 
 button {
   font: inherit;
+}
+
+input,
+select,
+button {
+  -webkit-tap-highlight-color: transparent;
 }
