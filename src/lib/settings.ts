@@ -60,4 +60,8 @@ function clampNumber(value: number | undefined, min: number, max: number, fallba
 export function applyTheme(theme: Theme): void {
   if (typeof document === "undefined") return;
   document.documentElement.dataset.theme = theme;
+  const themeColor = theme === "dark" ? "#202724" : "#f7f4ee";
+  document
+    .querySelector('meta[name="theme-color"]')
+    ?.setAttribute("content", themeColor);
 }
