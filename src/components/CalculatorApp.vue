@@ -267,7 +267,7 @@ onBeforeUnmount(() => {
         <button class="btn" type="button" @click="onClear" aria-label="全クリア">C</button>
         <button class="btn" type="button" @click="onBackspace" aria-label="バックスペース">⌫</button>
         <button class="btn operator" type="button" @click="onToggleSign" aria-label="符号反転">+/−</button>
-        <button class="btn operator" type="button" @click="onPercent" aria-label="パーセント">%</button>
+        <button class="btn operator" type="button" @click="onOperator('+')" aria-label="足し算">＋</button>
       </div>
 
       <div class="grid" aria-label="キー入力">
@@ -288,12 +288,12 @@ onBeforeUnmount(() => {
 
         <button class="btn wide" type="button" @click="onDigit('0')">0</button>
         <button class="btn" type="button" @click="onDecimal" aria-label="小数点">.</button>
-        <button class="btn operator" type="button" @click="onOperator('+')" aria-label="足し算">＋</button>
         <button class="btn accent" type="button" @click="onEquals" aria-label="イコール">=</button>
       </div>
 
       <div class="secondary-dock" aria-label="補助操作">
         <div class="secondary-group tax-row" aria-label="税計算">
+          <button class="btn operator secondary-btn" type="button" @click="onPercent" aria-label="パーセント">%</button>
           <button class="btn operator secondary-btn" type="button" @click="onTaxIn" aria-label="税込">税込</button>
           <button class="btn operator secondary-btn" type="button" @click="onTaxOut" aria-label="税抜">税抜</button>
         </div>
@@ -509,7 +509,7 @@ onBeforeUnmount(() => {
 }
 
 .tax-row .secondary-btn {
-  flex-basis: calc(50% - 0.25rem);
+  flex-basis: calc(33.333% - 0.35rem);
 }
 
 .memory-row {
@@ -539,7 +539,7 @@ onBeforeUnmount(() => {
   right: 0;
   transform: translateY(100%);
   transition: transform 0.24s ease;
-  z-index: 20;
+  z-index: 40;
 }
 
 .settings-panel.open {

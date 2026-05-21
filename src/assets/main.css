@@ -38,7 +38,7 @@
     var(--display-bg);
   color: var(--display-text);
   border-radius: 22px;
-  padding: 16px 16px 18px;
+  padding: 16px 16px 24px;
   min-height: 104px;
   display: flex;
   flex-direction: column;
@@ -54,6 +54,7 @@
 .display > div:last-child {
   width: 100%;
   overflow-x: auto;
+  padding-bottom: 4px;
   text-align: right;
   white-space: nowrap;
   scrollbar-width: none;
@@ -237,9 +238,7 @@
 .settings-backdrop {
   position: fixed;
   inset: 0;
-  background: var(--scrim);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: rgba(24, 30, 27, 0.18);
   z-index: 30;
 }
 
