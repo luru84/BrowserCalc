@@ -226,7 +226,7 @@ onBeforeUnmount(() => {
         </div>
         <div class="status-chips" aria-label="状態">
           <span v-if="indicatorOps.mem" class="status-chip">M</span>
-          <span class="status-chip">{{ state.mode === "expression" ? "式" : "逐次" }}</span>
+          <span class="status-chip">{{ state.mode === "expression" ? "式評価" : "入力順" }}</span>
         </div>
       </div>
 
@@ -411,7 +411,7 @@ onBeforeUnmount(() => {
           <div class="radio-group">
             <label>
               <input type="radio" name="mode" value="sequential" :checked="state.mode === 'sequential'" @change="() => onModeChange('sequential')" />
-              逐次計算
+              入力順（逐次計算）
             </label>
             <label>
               <input type="radio" name="mode" value="expression" :checked="state.mode === 'expression'" @change="() => onModeChange('expression')" />
