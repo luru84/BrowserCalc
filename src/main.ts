@@ -7,7 +7,8 @@ createApp(App).mount("#app");
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/sw.js").catch(() => {
+    const baseUrl = import.meta.env.BASE_URL;
+    navigator.serviceWorker.register(`${baseUrl}sw.js`, { scope: baseUrl }).catch(() => {
       // ignore registration failures
     });
   });

@@ -491,6 +491,7 @@ onBeforeUnmount(() => {
 
 .utility-row-main {
   grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin-top: 0.7rem;
 }
 
 .secondary-dock {
@@ -514,6 +515,7 @@ onBeforeUnmount(() => {
 
 .memory-row {
   flex-wrap: nowrap;
+  margin: 0;
   overflow-x: auto;
   padding-bottom: 0.15rem;
   scrollbar-width: none;
@@ -644,6 +646,7 @@ onBeforeUnmount(() => {
 
   .memory-row {
     flex-wrap: wrap;
+    margin: 0;
     overflow: visible;
     padding-bottom: 0;
   }
