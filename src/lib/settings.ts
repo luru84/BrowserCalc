@@ -18,7 +18,7 @@ export const defaultSettings: Settings = {
   grouping: true,
   scientific: false,
   theme: "light",
-  mode: "sequential",
+  mode: "expression",
 };
 
 function safeParse(json: string | null): Partial<Settings> {
@@ -43,7 +43,7 @@ export function loadSettings(): Settings {
     grouping: parsed.grouping ?? defaultSettings.grouping,
     scientific: parsed.scientific ?? defaultSettings.scientific,
     theme: parsed.theme === "dark" ? "dark" : "light",
-    mode: parsed.mode === "expression" ? "expression" : "sequential",
+    mode: parsed.mode === "sequential" ? "sequential" : "expression",
   };
 }
 
